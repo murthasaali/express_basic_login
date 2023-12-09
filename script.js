@@ -1,111 +1,65 @@
-// console.log("running")
-// function nefun(){
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
 
-// return 10
-// }
-// console.log(   nefun())
+app.use(bodyParser.json());
 
-// const interval=setInterval(() => {
-//     console.log("run")
-// }, 1000);
+// Declare a variable to store user data
+let users = [];
 
-// setTimeout(() => {
-//     console.log("run")
-// }, 3000);
+// POST '/users' - Create a user with name, email, and username
+app.post('/users', (req, res) => {
+    const { name, email, username } = req.body;
+    const newUser = { id: users.length + 1, name, email, username };
+    users.push(newUser);
+    res.json({ message: 'User created successfully', user: newUser });
+});
 
-// setTimeout(() => {
-//     clearInterval(interval)
-// }, 3000);
+// GET '/users' - Get all users list
+app.get('/users', (req, res) => {
+    res.json({ users });
+});
 
-
-// console.log(___direname)
-
-
-// const path =require("path")
-// console.log(path)
-
-// console.log(path.join(__dirname,"api","script.js"
-// ))
-
-// const fs=require('fs');
-// const path=require('path');
-// fs.readFile(path.join(__dirname,"/api2","api.text"),"utf8",(err,data)=>{
-//     if(err) throw err;
-//     console.log(data)
-// });
-
-
-// const EventEmitter=require("events")
-
-
-// const emitter =new EventEmitter()
-
-// emitter.on("message",(data)=>{
-//     console.log(data.text)
-// })
-
-// emitter.emit("message",{text:"userlogged"})
-
-// const http=require("http")
-// const fs = require("fs")
-// const path = require("path")
-
-// const server = http.createServer((req,res)=>{
-//     fs.readFile(path.join(__dirname,"views","index.html"),"utf8",(err,data)=>{
-//         if(err) throw err
-//         res.writeHead(200,{"content-type":"text/html"})
-//         res.end(data)
-//     })
-    
-// })
-// const PORT=process.env.PORT || 3001;
-
-
-// server.listen(PORT,()=>console.log(`server running on ${PORT}`))
-
-
-// const logger=require("./utils")
-
-// console.log(logger())
-
-
-// const app=express()
-
-
-// app.use(express.static("views"))
-
-
-
-// app.get("*",(req,res)=>{
-//     res.status(404).send("<h1>404</h1>")
-// })
-
-// const PORT=process.env.PORT || 3001
- 
-
-// app.listen(PORT,()=>console.log(`server running ${PORT}`))
-const express=require("express")
-const app=express()
-
-app.use(express.json())
-app.use(express.urlencoded({extended:true}))
-app.use(express.static("views"))
-
-const emailDB="murthasa@mail.com"
-const passwordDB="12345"
-app.post('/login',(req,res)=>{
-    console.log(req.body)
-    const {name,password}=req.body
-    if (name===emailDB&& password===passwordDB){
-        res.send("Login succussfull")
-
-    }else{
-        res.send("login failed")
+// GET '/users/:id' - Get a specific user based on the id provided
+app.get('/users/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    const foundUser = users.find(user => user.id === userId);
+    if (foundUser) {
+        res.json({ user: foundUser });
+    } else {
+        res.status(404).json({ message: 'User not found' });
     }
-})
+});
 
+// PUT '/users/:id' - Update a specific user
+app.put('/users/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    const { name, email, username } = req.body;
+    let foundUser = users.find(user => user.id === userId);
+    if (foundUser) {
+        foundUser.name = name || foundUser.name;
+        foundUser.email = email || foundUser.email;
+        foundUser.username = username || foundUser.username;
+        res.json({ message: 'User updated successfully', user: foundUser });
+    } else {
+        res.status(404).json({ message: 'User not found' });
+    }
+});
 
-const PORT=process.env.PORT || 3001
- 
+// DELETE '/users/:id' - Delete a specific user
+app.delete('/users/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    const initialLength = users.length;
+    users = users.filter(user => user.id !== userId);
+    if (users.length < initialLength) {
+        res.json({ message: 'User deleted successfully' });
+    } else {
+        res.status(404).json({ message: 'User not found' });
+    }
+});
 
-app.listen(PORT,()=>console.log(`server running ${PORT}`))
+// Start the server
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
